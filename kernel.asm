@@ -160,7 +160,7 @@ _shell:
 	int 0x21
 
 	call _cmd_cpuVendorID
-	;call _cmd_ProcessorType
+	call _cmd_ProcessorType
 	;call _cmd_ProcessorSerialNo
 	;call _cmd_ProcessorFeature
 	;call _cmd_MouseStatus
@@ -177,6 +177,43 @@ _shell:
 	mov [strcpuid+8],ecx; load first string
 	call _display_endl
 	mov si, strcpuid		;print CPU vender ID
+	mov al, 0x01
+	int 0x21
+	ret
+
+
+	_cmd_ProcessorType:
+
+	mov eax,0x80000002
+
+	cpuid     ; call cpuid command
+	mov [strcputype]   ,eax
+	mov [strcputype+4] ,ebx
+	mov [strcputype+8] ,ecx
+	mov [strcputype+12],edx
+
+	mov eax,0x80000003
+	cpuid; call cpuid command
+	mov [strcputype+16],eax
+	mov [strcputype+20],ebx
+	mov [strcputype+24],ecx
+	mov [strcputype+28],edx
+
+	mov eax,0x80000004
+	cpuid     ; call cpuid command
+	mov [strcputype+32],eax
+	mov [strcputype+36],ebx
+	mov [strcputype+40],ecx
+	mov [strcputype+44],edx
+
+	call _display_endl
+
+	;mov si, strProcessor
+	;mov al, 0x01
+	;int 0x21
+
+	call _display_space
+	mov si, strcputype           ;print processor type
 	mov al, 0x01
 	int 0x21
 	ret
@@ -505,5 +542,6 @@ _display_prompt:
 	strCmd3		resb	256
 	strCmd4		resb	256
 	strCmd5		resb	256
+	strcputype	resb	256
 
 ;********************end of the kernel code********************
