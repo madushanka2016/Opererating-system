@@ -83,7 +83,7 @@ _shell:
 	mov di, cmdVer
 	mov cx, 4
 	repe	cmpsb
-	jne	_cmd_exit		;next command
+	jne	_cmd_help		;next command
 	
 	call _display_endl
 	mov si, strOsName		;display version
@@ -104,10 +104,82 @@ _shell:
 	jmp _cmd_done
 
 
-	
+    ;********************************************************************************
+    ;********************************************************************************
+    ;********************************************************************************
+    ;********************************************************************************
+    ;********************************************************************************
+    ;********************************************************************************
+
+	;display help
+   	_cmd_help:		
+	mov si, strCmd0
+	mov di, cmdHelp
+	mov cx, 4
+	repe	cmpsb
+	jne	_cmd_hardwareInfo		;next command
+
+	call _display_endl
+	mov si, strHelpMsg0	;print help message
+	mov al, 0x01
+    int 0x21
+	call _display_endl
+	mov si, strHelpMsg1
+	mov al, 0x01
+    int 0x21
+	call _display_endl
+	mov si, strHelpMsg2
+	mov al, 0x01
+    int 0x21
+	call _display_endl
+	mov si, strHelpMsg3
+	mov al, 0x01
+    int 0x21
+	jmp _cmd_done
 
 
 
+    ;********************************************************************************
+    ;********************************************************************************
+    ;********************************************************************************
+    ;********************************************************************************
+    ;********************************************************************************
+    ;********************************************************************************
+
+	;Display Hardware Details
+    	_cmd_hardwareInfo:
+	mov si, strCmd0
+	mov di, cmdhInfo
+	mov cx, 5
+	repe	cmpsb
+	jne	_cmd_exit		;next command
+
+    	call _display_endl
+	mov si, strhInfo
+	mov al, 0x01
+	int 0x21
+
+	call _cmd_cpuVendorID
+	;call _cmd_ProcessorType
+	;call _cmd_ProcessorSerialNo
+	;call _cmd_ProcessorFeature
+	;call _cmd_MouseStatus
+
+	jmp _cmd_done
+
+	;********************************************************************************
+	_cmd_cpuVendorID:
+
+	mov eax,0
+	cpuid; call cpuid command
+	mov [strcpuid],ebx; load last string
+	mov [strcpuid+4],edx; load middle string
+	mov [strcpuid+8],ecx; load first string
+	call _display_endl
+	mov si, strcpuid		;print CPU vender ID
+	mov al, 0x01
+	int 0x21
+	ret
 
 
 	; exit shell
@@ -412,6 +484,7 @@ _display_prompt:
 	cmdVer			db	"ver", 0x00		; internal commands
 	cmdExit			db	"exit", 0x00
 	cmdHelp 		db 	"help", 0x00
+	cmdhInfo		db	"details", 0x00
 
 	txtVersion		db	"version", 0x00	;messages and other strings
 	msgUnknownCmd	db	"Unknown command or bad file name!", 0x00
@@ -420,6 +493,8 @@ _display_prompt:
 	strHelpMsg1		db 	"ssss",0x00
 	strHelpMsg2		db 	"mmmmm",0x00
 	strHelpMsg3		db 	"exit",0x00
+	strhInfo		db	"**Hardware Information**",0x00
+	strcpuid		db	"CPU Vender : ",0x00
 
 [SEGMENT .bss]
 	strUserCmd	resb	256		;buffer for user commands
