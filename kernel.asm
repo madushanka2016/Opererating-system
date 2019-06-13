@@ -161,8 +161,8 @@ _shell:
 
 	call _cmd_cpuVendorID
 	call _cmd_ProcessorType
-	call _cmd_hardware
-	;call _cmd_ProcessorSerialNo
+	call _cmd_serialport
+	call _cmd_ProcessorSerialNo
 	;call _cmd_ProcessorFeature
 	;call _cmd_MouseStatus
 
@@ -170,13 +170,16 @@ _shell:
 
 	;********************************************************************************
 	_cmd_cpuVendorID:
+	call _display_endl
+	mov si,strvender
+	mov al, 0x01
+	int 0x21
 
 	mov eax,0
 	cpuid; call cpuid command
 	mov [strcpuid],ebx; load last string
 	mov [strcpuid+4],edx; load middle string
 	mov [strcpuid+8],ecx; load first string
-	call _display_endl
 	mov si, strcpuid		;print CPU vender ID
 	mov al, 0x01
 	int 0x21
@@ -184,9 +187,12 @@ _shell:
 
 
 	_cmd_ProcessorType:
+	call _display_endl
+	mov si, strproceType
+	mov al, 0x01
+	int 0x21
 
 	mov eax,0x80000002
-
 	cpuid     ; call cpuid command
 	mov [strcputype]   ,eax
 	mov [strcputype+4] ,ebx
@@ -207,20 +213,28 @@ _shell:
 	mov [strcputype+40],ecx
 	mov [strcputype+44],edx
 
-	call _display_endl
-
-	;mov si, strProcessor
-	;mov al, 0x01
-	;int 0x21
-
-	call _display_space
 	mov si, strcputype           ;print processor type
 	mov al, 0x01
 	int 0x21
 	ret
-	
 	;***************************************************************
-	_cmd_hardware:
+	_cmd_ProcessorSerialNo:
+	call _display_endl
+	mov si, strserialnumber
+	mov al, 0x01
+	int 0x21
+
+	mov eax,3
+	cpuid; call cpuid command
+	and edx,1
+	mov [strcpuserno],edx;
+	mov [strcpuserno+16],ecx;
+	mov si, strcpuserno		;print CPU vender ID
+	mov al, 0x01
+	int 0x21
+	ret
+	;***************************************************************
+	_cmd_serialport:
 	call _display_endl
 	mov si, strserialportnumber
 	mov al, 0x01
@@ -236,13 +250,7 @@ _shell:
 	int 0x10
 	ret
 
-	;mov ax, [es:0000h]	; Read address for serial port 1
-	;cmp ax, 0
-	;je _end
-	;call _display_endl
-	;mov si, strserialport1
-        ;mov al, 0x01
-        ;int 0x21	
+	
 
 
 
@@ -543,8 +551,8 @@ _display_prompt:
 	cmdMaxLen		db	255			;maximum length of commands
 
 	strOsName		db	"MadushankaOS", 0x00	;OS details
-	strMajorVer		db	"0", 0x00
-	strMinorVer		db	".03", 0x00
+	strMajorVer		db	"1", 0x00
+	strMinorVer		db	".00", 0x00
 
 	cmdVer			db	"ver", 0x00		; internal commands
 	cmdExit			db	"exit", 0x00
@@ -552,16 +560,19 @@ _display_prompt:
 	cmdhInfo		db	"details", 0x00
 
 	txtVersion		db	"version", 0x00	;messages and other strings
-	msgUnknownCmd	db	"Unknown command or bad file name!", 0x00
+	msgUnknownCmd	db	"Unknown command or bad file name! Plese type help to get 'help' menu", 0x00
 
-	strHelpMsg0		db 	"ver for version",0x00
-	strHelpMsg1		db 	"ssss",0x00
-	strHelpMsg2		db 	"details",0x00
-	strHelpMsg3		db 	"exit",0x00
+	strHelpMsg0		db 	"help for help menu",0x00
+	strHelpMsg1		db 	"ver for version",0x00
+	strHelpMsg2		db 	"details for hardware details",0x00
+	strHelpMsg3		db 	"exit for exit",0x00
 	strhInfo		db	"**Hardware Information**",0x00
 	strcpuid		db	"CPU Vender : ",0x00
-	strserialport1		db	"serial",0x00
-	strserialportnumber	db	"number of serial port",0x00
+	strserialportnumber	db	"number of serial port :",0x00
+	strserialnumber		db	"serial Number :",0x00
+	strvender		db	"CPU Vender :",0x00
+	strproceType		DB	"CPU Type :",0x00
+	
 
 [SEGMENT .bss]
 	strUserCmd	resb	256		;buffer for user commands
@@ -573,5 +584,6 @@ _display_prompt:
 	strCmd4		resb	256
 	strCmd5		resb	256
 	strcputype	resb	256
+	strcpuserno	resb	256
 
 ;********************end of the kernel code********************
