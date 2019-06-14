@@ -164,7 +164,7 @@ _shell:
 	call _cmd_serialport
 	call _cmd_ProcessorSerialNo
 	;call _cmd_ProcessorFeature
-	;call _cmd_MouseStatus
+	call _cmd_MouseStatus
 
 	jmp _cmd_done
 
@@ -249,6 +249,30 @@ _shell:
 	mov bl, 0x07
 	int 0x10
 	ret
+	;**************************************************************
+	_cmd_MouseStatus:
+	call _display_endl
+	mov si, strmouseState
+	mov al, 0x01
+	int 0x21
+	mov ax, 0
+	int 33h
+	cmp ax, 0
+	jne ok
+	call _display_space
+	mov si, strMouseNo
+	mov al, 0x01
+	int 0x21
+	ret
+	ok:
+		mov ax, 1
+		int 33h
+		call _display_space
+		mov si, strMouseYes
+		mov al, 0x01
+		int 0x21
+		ret
+		
 
 	
 
@@ -566,12 +590,16 @@ _display_prompt:
 	strHelpMsg1		db 	"ver for version",0x00
 	strHelpMsg2		db 	"details for hardware details",0x00
 	strHelpMsg3		db 	"exit for exit",0x00
-	strhInfo		db	"**Hardware Information**",0x00
+	strhInfo		db	"*****  Hardware Information  *****",0x00
 	strcpuid		db	"CPU Vender : ",0x00
 	strserialportnumber	db	"number of serial port :",0x00
 	strserialnumber		db	"serial Number :",0x00
 	strvender		db	"CPU Vender :",0x00
-	strproceType		DB	"CPU Type :",0x00
+	strproceType		db	"CPU Type :",0x00
+	strmouseState		db	"Mouse state :",0x00
+	strMouseNo		db	"Mouse not found",0x00
+	strMouseYes		db	"Mouse found",0x00
+	
 	
 
 [SEGMENT .bss]
