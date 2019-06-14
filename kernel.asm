@@ -161,6 +161,7 @@ _shell:
 
 	call _cmd_cpuVendorID
 	call _cmd_ProcessorType
+	call _cmd_hardware
 	;call _cmd_ProcessorSerialNo
 	;call _cmd_ProcessorFeature
 	;call _cmd_MouseStatus
@@ -217,6 +218,33 @@ _shell:
 	mov al, 0x01
 	int 0x21
 	ret
+	
+	;***************************************************************
+	_cmd_hardware:
+	call _display_endl
+	mov si, strserialportnumber
+	mov al, 0x01
+	int 0x21
+
+	mov ax, [es:0x10]
+	shr ax, 9
+	and ax, 0x0007
+	add al, 30h
+	mov ah, 0x0E            ; BIOS teletype acts on character
+	mov bh, 0x00
+	mov bl, 0x07
+	int 0x10
+	ret
+
+	;mov ax, [es:0000h]	; Read address for serial port 1
+	;cmp ax, 0
+	;je _end
+	;call _display_endl
+	;mov si, strserialport1
+        ;mov al, 0x01
+        ;int 0x21	
+
+
 
 
 	; exit shell
@@ -510,11 +538,11 @@ _display_prompt:
 	ret
 
 [SEGMENT .data]
-    strWelcomeMsg   db  "Welcome to JOSH Ver 0.03", 0x00
-	strPrompt		db	"JOSH>>", 0x00
+    strWelcomeMsg   db  "Welcome to MadushakaOS Ver 1.00", 0x00
+	strPrompt		db	"User >> ", 0x00
 	cmdMaxLen		db	255			;maximum length of commands
 
-	strOsName		db	"JOSH", 0x00	;OS details
+	strOsName		db	"MadushankaOS", 0x00	;OS details
 	strMajorVer		db	"0", 0x00
 	strMinorVer		db	".03", 0x00
 
@@ -528,10 +556,12 @@ _display_prompt:
 
 	strHelpMsg0		db 	"ver for version",0x00
 	strHelpMsg1		db 	"ssss",0x00
-	strHelpMsg2		db 	"mmmmm",0x00
+	strHelpMsg2		db 	"details",0x00
 	strHelpMsg3		db 	"exit",0x00
 	strhInfo		db	"**Hardware Information**",0x00
 	strcpuid		db	"CPU Vender : ",0x00
+	strserialport1		db	"serial",0x00
+	strserialportnumber	db	"number of serial port",0x00
 
 [SEGMENT .bss]
 	strUserCmd	resb	256		;buffer for user commands
